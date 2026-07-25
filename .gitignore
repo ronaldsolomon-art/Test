@@ -1,2 +1,5 @@
 __pycache__/
 *.pyc
+
+# Runtime data written by the executor (state, events, audit CSVs)
+practice_data/

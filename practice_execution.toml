@@ -1,0 +1,50 @@
+# OANDA PRACTICE-ONLY configuration for the separate practice-order executor.
+# This file contains no token and no account ID. Keep your secrets in terminal
+# environment variables. The executor rejects any base URL other than OANDA's
+# exact HTTPS practice endpoint.
+
+[bot]
+# The video-specified fixed target: 10 displayed broker points.
+target_points = 10
+poll_interval_seconds = 30
+history_candle_count = 96
+entry_cutoff_new_york = "16:45"
+
+[market_data]
+# Do not change. Any other value causes the executor to exit before it can submit an order.
+base_url = "https://api-fxpractice.oanda.com"
+timeout_seconds = 15
+
+[execution]
+# Hard safety boundary. Any other value causes the executor to exit.
+environment = "practice_only"
+# The shell variable containing your own OANDA practice-account ID.
+account_id_env = "OANDA_PRACTICE_ACCOUNT_ID"
+# Across BOTH configured instruments, block a submission if this many open or pending trades already exist.
+max_total_open_trades = 2
+# Block a configured order larger than this integer-unit cap.
+max_units_per_order = 1000
+# Account-home-currency amount reported by OANDA. Zero means no additional floor;
+# choose a positive amount yourself if you want a stricter practice safety threshold.
+min_margin_available = "0"
+# A MARKET order is cancelled if it cannot fill within this many displayed points
+# of the signal-candle close. This is an execution guard, not the target distance.
+max_entry_deviation_points = 30
+
+[logging]
+state_file = "practice_data/state.json"
+events_file = "practice_data/events.jsonl"
+orders_file = "practice_data/practice_orders.csv"
+trades_file = "practice_data/practice_trade_snapshots.csv"
+
+[[pairs]]
+instrument = "EUR_USD"
+display_precision = 5
+point_size = "0.00001"
+fixed_units = 1000
+
+[[pairs]]
+instrument = "USD_JPY"
+display_precision = 3
+point_size = "0.001"
+fixed_units = 1000
