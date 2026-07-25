@@ -265,7 +265,7 @@ class OpeningRangeStrategy:
 
     def process_candle(self, candle: Candle, pair_state: dict[str, Any]) -> None:
         local_start = candle.new_york_start
-        if local_start.time() < ENTRY_START or local_start.time() > self.entry_cutoff:
+        if local_start.time() < ENTRY_START:
             return
         opening_range = pair_state.get("range")
         if not opening_range:
@@ -275,8 +275,16 @@ class OpeningRangeStrategy:
         if existing_payload:
             trade = PaperTrade.from_state(existing_payload)
             if trade.status == "OPEN":
+                # Manage an open position's stop/target on every candle for the rest
+                # of the session, INCLUDING after the entry cutoff. The cutoff gates
+                # new entries only; a position already on must still be allowed to
+                # reach its stop or target rather than being left silently open.
                 self._evaluate_exit(candle, trade)
                 pair_state["trade"] = asdict(trade)
+            return
+
+        # No position open: only OPEN a new trade within the entry window.
+        if local_start.time() > self.entry_cutoff:
             return
 
         range_high = Decimal(opening_range["high"])

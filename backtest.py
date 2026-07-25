@@ -85,10 +85,12 @@ def candles_from_csv(path: Path) -> list[Candle]:
 
 
 def synthetic_candles(sessions: int, point_size: Decimal, seed: int = 7) -> list[Candle]:
-    """Random-walk M15 candles, 09:30..16:45 NY, for `sessions` weekdays.
+    """Random-walk M15 candles, 09:30..19:45 NY, for `sessions` weekdays.
 
     Deliberately simple: a per-candle Gaussian step a few points in size. Not a
     market model -- only enough structure to exercise the harness end to end.
+    The window extends past the 16:45 entry cutoff so open positions have candles
+    on which to reach their stop/target after the cutoff.
     """
     rng = random.Random(seed)
     step = float(point_size) * 6.0  # ~6 points of noise per bar
@@ -98,9 +100,9 @@ def synthetic_candles(sessions: int, point_size: Decimal, seed: int = 7) -> list
     price = 1.10
     while made < sessions:
         if day.isoweekday() <= 5:
-            # 09:30 through 16:45 inclusive = 30 M15 bars
+            # 09:30 through 19:45 inclusive = 42 M15 bars (spans past the cutoff)
             local = datetime(day.year, day.month, day.day, 9, 30, tzinfo=NEW_YORK)
-            for _ in range(30):
+            for _ in range(42):
                 o = price
                 c = o + rng.gauss(0, step)
                 hi = max(o, c) + abs(rng.gauss(0, step)) * 0.5
@@ -199,7 +201,7 @@ def main() -> int:
     print(f"Sessions   : {len(group_by_session(candles))}")
     print(f"Wins (TP)  : {result['wins']}")
     print(f"Losses (SL): {result['losses']}")
-    print(f"Unresolved : {result['unresolved']} (open at entry cutoff -- strategy never exits these)")
+    print(f"Unresolved : {result['unresolved']} (still open at the end of the session's candle data)")
     print(f"No-signal  : {result['no_signal_days']} sessions with a range but no breakout")
     if result["resolved"]:
         print(f"WIN RATIO  : {result['win_ratio']*100:.1f}%  ({result['wins']}/{result['resolved']} resolved)")
