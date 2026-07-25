@@ -1,0 +1,37 @@
+# PAPER-ONLY configuration for paper_orb_bot.py.
+# The paper bot performs read-only market-data requests and places NO orders.
+# This file contains no token. Set OANDA_API_TOKEN (a practice-account token)
+# in your terminal environment before running. Market data is read from OANDA's
+# HTTPS practice endpoint.
+
+[bot]
+# Fixed take-profit target in displayed broker points (matches the executor).
+target_points = 10
+# This implementation supports exactly one paper trade per pair per NY day.
+max_trades_per_day = 1
+poll_interval_seconds = 30
+history_candle_count = 96
+entry_cutoff_new_york = "16:45"
+
+[market_data]
+# Must be OANDA's HTTPS practice endpoint.
+base_url = "https://api-fxpractice.oanda.com"
+timeout_seconds = 15
+
+[logging]
+# Separate output directory from the executor's practice_data/ to avoid collisions.
+state_file = "paper_data/state.json"
+events_file = "paper_data/events.jsonl"
+trades_file = "paper_data/paper_trades.csv"
+
+[[pairs]]
+instrument = "EUR_USD"
+display_precision = 5
+point_size = "0.00001"
+fixed_units = 1000
+
+[[pairs]]
+instrument = "USD_JPY"
+display_precision = 3
+point_size = "0.001"
+fixed_units = 1000
