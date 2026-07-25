@@ -297,6 +297,20 @@ class OpeningRangeStrategy:
             stop = range_high
             target = candle.close - distance
 
+        # Fail safe: never open a paper trade on a nonsensical price geometry (for
+        # example a target driven non-positive by an extreme target_points). The
+        # normal invariant is stop < close < target (LONG) or target < close < stop
+        # (SHORT); anything else is skipped and logged rather than simulated.
+        if target <= 0 or not (min(stop, target) < candle.close < max(stop, target)):
+            self.recorder.event(
+                "STATUS",
+                self.instrument,
+                "Breakout detected but computed stop/target geometry is invalid; no paper trade opened.",
+                side=side,
+                close=decimal_text(candle.close, self.precision),
+            )
+            return
+
         trade = PaperTrade(
             instrument=self.instrument,
             side=side,
@@ -462,9 +476,29 @@ def run_once(config_path: Path, replay_today: bool) -> None:
         token=os.getenv("OANDA_API_TOKEN", "").strip(),
         timeout_seconds=int(market_config["timeout_seconds"]),
     )
-    for pair in config["pairs"]:
-        run_pair(pair, config, client, recorder, state, replay_today)
-    recorder.save_state(state)
+    # Isolate pairs from one another: a failure processing one instrument must not
+    # skip the remaining pairs, and state is always persisted at the end of the cycle.
+    try:
+        for pair in config["pairs"]:
+            instrument = str(pair.get("instrument", "?")) if isinstance(pair, dict) else "?"
+            try:
+                run_pair(pair, config, client, recorder, state, replay_today)
+            except BotError as exc:
+                recorder.event(
+                    "ERROR",
+                    instrument,
+                    f"Pair processing failed this cycle; other pairs continue: {exc}",
+                    reason=str(exc),
+                )
+            except Exception as exc:  # Defensive: never let one pair abort the whole cycle.
+                recorder.event(
+                    "ERROR",
+                    instrument,
+                    "Unexpected pair failure this cycle; other pairs continue: "
+                    f"{exc.__class__.__name__}: {exc}",
+                )
+    finally:
+        recorder.save_state(state)
 
 
 def main() -> int:
