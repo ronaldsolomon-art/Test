@@ -43,9 +43,11 @@ instrument = "EUR_USD"
 display_precision = 5
 point_size = "0.00001"
 fixed_units = 1000
-# Per-pair override: on 5yr of real M15 data EUR/USD has positive expectancy
-# with a much larger target (~150 points / ~15 pips), unlike the tiny default.
-target_points = 150
+# Per-pair override: target ~40 points (~4 pips), no stop cap. On 5yr of real
+# M15 data this clears a >76% win rate AND stays profitable (~84% win, ~+5 pts/
+# trade net of spread), validated out-of-sample and in the trailing year. The
+# tiny default (10) wins ~94% but loses money; see RESULTS.md.
+target_points = 40
 
 [[pairs]]
 instrument = "USD_JPY"

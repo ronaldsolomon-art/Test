@@ -55,13 +55,43 @@ in-sample or out.
 
 ## 4. Decision applied to the config
 
-- **EUR/USD → `target_points = 150`** (per-pair override).
+Two profitable EUR/USD tunings emerged, optimizing different objectives:
+
+| Objective | Target | Win rate | Net expectancy | Note |
+|-----------|--------|----------|----------------|------|
+| Max total profit | 150 | ~61% | +18.8 net pts | most money, but wins only ~61% |
+| **Win rate >76% + profit (chosen)** | **40** | **~84%** | **+5.7 net pts** | high, steady win rate |
+
+- **EUR/USD → `target_points = 40`** (per-pair override) — chosen to meet a
+  >76% win-rate objective while staying profitable.
 - **USD/JPY → keeps the default 10** (no profitable geometry found; consider not trading it).
 
-Both programs now support a per-pair `target_points` that overrides the global
+Both programs support a per-pair `target_points` that overrides the global
 `bot.target_points`.
 
+### Win-rate-constrained search (target with no stop cap)
+
+Every tested target of ~30-50 clears >76% win AND positive net-of-spread
+expectancy, in-sample, out-of-sample, and in the trailing year:
+
+| Target | Full 5yr | Out-of-sample (last 30%) | Past 12 months |
+|--------|----------|--------------------------|----------------|
+| 30 | 87.0% / +2.4 | 86.8% / +2.1 | 85.8% / +3.6 |
+| **40 (chosen)** | 84.0% / +5.7 | 83.0% / +4.7 | 81.0% / +4.8 |
+| 50 | 80.9% / +6.5 | 79.4% / +4.6 | 76.8% / +3.5 |
+
+(win% / net-of-spread points per trade). Target 40 gives the best balance of a
+comfortable margin above 76% and steady profit. Stop caps were worse at every
+target. The mechanism: a ~40-pt target is ~4x the original, hit ~84% of the
+time, so frequent wins finally outweigh the rare full-range losses.
+
 ## 5. Account equity backtest — EUR/USD from $100
+
+> Note: the equity figures in sections 5-6 were computed with the earlier
+> max-profit target of 150. With the chosen target of 40, $1,000 at 10,000
+> units (0.2-pip spread) grows to ~$1,713 (+71%) with a ~18% max drawdown —
+> lower total profit than 150, but an ~84% win rate. Rerun any row with
+> `equity.py` against the current config to refresh.
 
 Shipped sizing (`fixed_units = 1000`, non-compounding), traded chronologically:
 
