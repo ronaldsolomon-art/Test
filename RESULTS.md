@@ -126,6 +126,29 @@ Same 1,050 trades, different sizing:
 
 Run these with `equity.py --units N` (scaled) or `equity.py --risk-pct X` (compounding).
 
+## 7. Rolling walk-forward validation (target re-optimized each fold)
+
+Gold-standard test: on each fold the target is re-chosen on an 18-month training
+window (best net-of-spread expectancy clearing >76% win), then applied blind to the
+next 6 months. Run with `walkforward.py`.
+
+| Test window | Chosen target | Test win% | Net exp (pts) |
+|-------------|---------------|-----------|---------------|
+| 2023-01 → 07 | 50 | 79.5% | −1.41 |
+| 2023-07 → 2024-01 | 40 | 86.8% | +0.66 |
+| 2024-01 → 07 | 40 | 78.7% | +4.70 |
+| 2024-07 → 2025-01 | 40 | 82.8% | +8.56 |
+| 2025-01 → 07 | 50 | 86.3% | +9.95 |
+| 2025-07 → 2026-01 | 50 | 77.0% | −0.48 |
+| 2026-01 → 06 | 40 | 79.2% | +1.15 |
+
+- Re-optimized target consistently landed on **40–50 (avg 44)** — 40 is a sound central choice.
+- **Win rate cleared 76% in all 7 out-of-sample windows.** Robust.
+- Aggregate out-of-sample ($1,000 @ 10,000 units, 0.2-pip spread): **$1,285 (+28.5%)** over 853
+  OOS trades, **81.5% win, 17% max drawdown**.
+- Profitability is real on aggregate but **thin** — 2 of 7 windows were marginally negative. A
+  dependable high-win-rate strategy with a small edge, not a money printer.
+
 ## Caveats
 
 - **Gross, mid-price.** Real fills pay spread + slippage; the table above brackets it,
