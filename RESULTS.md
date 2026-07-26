@@ -75,6 +75,27 @@ Over 1,050 resolved trades (60.8% win). The account never approached ruin; 1,000
 of EUR/USD is ~11:1 leverage on $100, and the lowest equity (~$81) stays far above a
 50:1 margin requirement (~$23).
 
+## 6. Position sizing comparison (EUR/USD, $1,000 start, 0.2-pip spread)
+
+Same 1,050 trades, different sizing:
+
+| Sizing | Final | Return | Max drawdown | Peak leverage | Realistic? |
+|--------|-------|--------|--------------|---------------|------------|
+| Fixed 1,000 units | $1,198 | +20% | 2.5% | 1.2x | yes |
+| Fixed 10,000 units (scaled) | $2,976 | +198% | 12.0% | 13.8x | yes |
+| Compounding 1%/trade | $1,956 | +96% | 12.3% | 25x | borderline |
+| Compounding 2%/trade | $3,506 | +251% | 23.6% | 50x | at broker limit |
+| Compounding 5%/trade | $11,936 | +1094% | 53.0% | 130x | no |
+
+- Return and drawdown scale together; there is no free lunch.
+- **At equal ~12% drawdown, scaled fixed sizing (+198%) beats compounding at 1% (+96%).**
+- Compounding sizes each trade to risk a fixed % of equity; on tight-opening-range days
+  the stop is close, so required leverage spikes (25-130x). Values above ~30-50x exceed
+  typical retail broker limits, so the 2%/5% rows are optimistic — a real broker would
+  reject those sizes. Only the fixed-unit modes (<=14x) are fully executable.
+
+Run these with `equity.py --units N` (scaled) or `equity.py --risk-pct X` (compounding).
+
 ## Caveats
 
 - **Gross, mid-price.** Real fills pay spread + slippage; the table above brackets it,
