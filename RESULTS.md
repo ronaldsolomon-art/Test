@@ -161,6 +161,33 @@ next 6 months. Run with `walkforward.py`.
 - **One train/test split**, not a full rolling walk-forward. The `150` came from an
   in-sample grid search that was then checked once out-of-sample.
 
+## 8. Broker-accurate costs — the reality check (`broker.py`)
+
+The sections above are gross of slippage. `broker.py` models OANDA v20 fills on the
+mid-price data: market entry crosses to the ask/bid + slippage; take-profit is a limit
+(fills at price but must be *reached* by the bid/ask, paying the second half-spread via
+the trigger); stop-loss triggers half a spread sooner and fills worse by a slippage
+amount (or at a gapped open). EUR/USD, target 40, $1,000 @ 10,000 units:
+
+| All-in spread | Win rate | Expectancy | $1,000 → | Verdict |
+|---------------|----------|------------|----------|---------|
+| 0.0 pip | 84.0% | +6.74 pts | $1,840 | ideal |
+| 0.2 pip | 83.5% | +4.27 pts | $1,532 | profitable |
+| ~0.5 pip | ~82% | ≈ 0 | ~$1,000 | break-even |
+| 0.6 pip | 82.4% | −0.28 pts | $965 | loses |
+| 1.0 pip (typical retail) | 81.3% | −5.13 pts | $362 | loses badly |
+| 1.4 pip | 80.6% | −8.38 pts | −$42 | blown |
+
+- **Break-even is ~0.5 pip all-in.** The strategy is profitable only at ECN/raw-spread
+  costs (~0.2–0.4 pip in liquid NY hours); at standard ~1-pip retail spread it is a clear
+  net loser.
+- **Win rate barely moves (81–84%) while profitability flips sign** — the definitive proof
+  that the ~84% win rate is not an edge. Wins shrink by ~half a spread; the rare, large
+  losses grow by half a spread + stop slippage.
+- Defaults (0.5-pt entry slip, 3-pt stop slip) are lenient, so this is not a pessimistic case.
+
+Run: `python3 broker.py --csv EURUSD_15m.csv --instrument EUR_USD --sweep-spread`.
+
 ## Visuals
 
 Standalone pages in [`docs/`](docs/): [`strategy.html`](docs/strategy.html) diagrams the
