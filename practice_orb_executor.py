@@ -77,6 +77,7 @@ class PairSettings:
     display_precision: int
     point_size: Decimal
     units: int
+    target_points: Decimal
 
 
 @dataclass(frozen=True)
@@ -144,18 +145,22 @@ def load_practice_config(path: Path) -> dict[str, Any]:
     return config
 
 
-def parse_pair_settings(raw: dict[str, Any]) -> PairSettings:
+def parse_pair_settings(raw: dict[str, Any], default_target_points: Decimal) -> PairSettings:
     try:
         pair = PairSettings(
             instrument=str(raw["instrument"]),
             display_precision=int(raw["display_precision"]),
             point_size=Decimal(str(raw["point_size"])),
             units=int(raw["fixed_units"]),
+            # A pair may override the global bot.target_points with its own value.
+            target_points=Decimal(str(raw.get("target_points", default_target_points))),
         )
     except (KeyError, ValueError, InvalidOperation) as exc:
         raise BotError(f"Invalid pair configuration: {raw!r}") from exc
     if pair.point_size <= 0 or pair.units <= 0 or pair.display_precision < 0:
         raise BotError(f"{pair.instrument}: point_size, fixed_units, and display_precision must be positive.")
+    if pair.target_points <= 0:
+        raise BotError(f"{pair.instrument}: target_points must be positive.")
     return pair
 
 
@@ -443,7 +448,7 @@ class PracticeExecutor:
         self.target_points = Decimal(str(config["bot"]["target_points"]))
         self.entry_cutoff = clock_time.fromisoformat(str(config["bot"]["entry_cutoff_new_york"]))
         self.history_count = int(config["bot"]["history_candle_count"])
-        self.pairs = [parse_pair_settings(item) for item in config["pairs"]]
+        self.pairs = [parse_pair_settings(item, self.target_points) for item in config["pairs"]]
         if self.target_points <= 0 or self.history_count < 8:
             raise BotError("bot.target_points must be positive and history_candle_count must be at least 8.")
         self.instrument_metadata: dict[str, dict[str, Any]] = {}
@@ -538,7 +543,7 @@ class PracticeExecutor:
         else:
             return None
 
-        distance = self.target_points * pair.point_size
+        distance = pair.target_points * pair.point_size
         deviation = self.execution_settings.max_entry_deviation_points * pair.point_size
         if side == "LONG":
             stop = range_low

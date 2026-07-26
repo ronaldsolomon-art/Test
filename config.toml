@@ -5,7 +5,8 @@
 # HTTPS practice endpoint.
 
 [bot]
-# Fixed take-profit target in displayed broker points (matches the executor).
+# Default take-profit target in displayed broker points for any pair that does
+# not set its own. A pair may override this with a per-pair target_points.
 target_points = 10
 # This implementation supports exactly one paper trade per pair per NY day.
 max_trades_per_day = 1
@@ -29,9 +30,14 @@ instrument = "EUR_USD"
 display_precision = 5
 point_size = "0.00001"
 fixed_units = 1000
+# Per-pair override: on 5yr of real M15 data EUR/USD has positive expectancy
+# with a much larger target (~150 points / ~15 pips), unlike the tiny default.
+target_points = 150
 
 [[pairs]]
 instrument = "USD_JPY"
 display_precision = 3
 point_size = "0.001"
 fixed_units = 1000
+# No override: USD/JPY had no profitable target in testing, so it keeps the
+# default (10). Consider not trading this pair with this strategy.

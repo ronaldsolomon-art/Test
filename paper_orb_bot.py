@@ -217,7 +217,8 @@ class OpeningRangeStrategy:
         self.point_size = Decimal(str(pair["point_size"]))
         self.units = int(pair["fixed_units"])
         self.precision = int(pair["display_precision"])
-        self.target_points = Decimal(str(bot_config["target_points"]))
+        # A pair may override the global bot.target_points with its own value.
+        self.target_points = Decimal(str(pair.get("target_points", bot_config["target_points"])))
         self.max_trades = int(bot_config["max_trades_per_day"])
         self.entry_cutoff = clock_time.fromisoformat(str(bot_config["entry_cutoff_new_york"]))
         self.recorder = recorder

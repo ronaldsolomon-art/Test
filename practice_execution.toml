@@ -4,7 +4,8 @@
 # exact HTTPS practice endpoint.
 
 [bot]
-# The video-specified fixed target: 10 displayed broker points.
+# Default take-profit target in displayed broker points for any pair that does
+# not set its own (the video-specified value). A pair may override it below.
 target_points = 10
 poll_interval_seconds = 30
 history_candle_count = 96
@@ -42,9 +43,14 @@ instrument = "EUR_USD"
 display_precision = 5
 point_size = "0.00001"
 fixed_units = 1000
+# Per-pair override: on 5yr of real M15 data EUR/USD has positive expectancy
+# with a much larger target (~150 points / ~15 pips), unlike the tiny default.
+target_points = 150
 
 [[pairs]]
 instrument = "USD_JPY"
 display_precision = 3
 point_size = "0.001"
 fixed_units = 1000
+# No override: USD/JPY had no profitable target in testing, so it keeps the
+# default (10). Consider not trading this pair with this strategy.
