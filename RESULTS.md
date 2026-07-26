@@ -161,6 +161,12 @@ next 6 months. Run with `walkforward.py`.
 - **One train/test split**, not a full rolling walk-forward. The `150` came from an
   in-sample grid search that was then checked once out-of-sample.
 
+## Visuals
+
+Standalone pages in [`docs/`](docs/): [`strategy.html`](docs/strategy.html) diagrams the
+strategy; [`equity-curve.html`](docs/equity-curve.html) plots the target-40 equity curve against
+the walk-forward out-of-sample curve.
+
 ## Reproduce
 
 ```
