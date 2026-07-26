@@ -1,5 +1,7 @@
 __pycache__/
 *.pyc
+.pytest_cache/
+.coverage
 
 # Runtime data written by the executor (state, events, audit CSVs)
 practice_data/

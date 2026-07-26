@@ -1,0 +1,7 @@
+[tool.pytest.ini_options]
+# Tests import the top-level modules (paper_orb_bot, practice_orb_executor, ...)
+# directly, so the repository root must be on sys.path. The root conftest.py
+# also guarantees this, and `pythonpath` makes it explicit for any runner.
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-ra"
